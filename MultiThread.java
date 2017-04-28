@@ -1,6 +1,19 @@
+/*
+ * Con questo programma voglio illustrare i seguenti concetti:
+ * 1. MAIN e' un thread come gli altri e quindi puo' terminare prima che gli altri
+ * 2. THREADs vengono eseguiti allo stesso tempo
+ * 3. THREADs possono essere interrotti e hanno la possibilita' di interrompersi in modo pulito
+ * 4. THREADs possono essere definiti mediante una CLASSE che implementa un INTERFACCIA Runnable
+ * 5. THREADs possono essere avviati in modo indipendente da quando sono stati definiti
+ * 6. posso passare parametri al THREADs tramite il costruttore della classe Runnable
+ */
 package multithread;
 
 import java.util.Random;
+/**
+ *
+ * @author Mario Ghergut
+ */
 import java.util.concurrent.TimeUnit;
 import static multithread.TicTacToe.punteggio;
 
@@ -70,7 +83,7 @@ class TicTacToe implements Runnable {
             //System.out.print(msg);
             
             try {
-                 Random random = new Random();
+                 Random random = new Random();// generatore di numeri casuali che sara utile per sleep
                  int j = 100;
                  int n = 300-j;
                  int k = random.nextInt(n)+j;
@@ -79,10 +92,10 @@ class TicTacToe implements Runnable {
                 System.out.println("THREAD " + t + " e' stata interrotta! bye bye...");
                 return; //me ne vado = termino il THREAD
             }
-            if ("TOE".equals(t) && trovato == true)
+            if ("TOE".equals(t) && trovato == true)//confronto per vedere se TOE esce subito dopo TAC
             {
 
-                punteggio++;
+                punteggio++; 
             }   
             else
             {
