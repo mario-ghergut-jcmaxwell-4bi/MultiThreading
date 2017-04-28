@@ -1,47 +1,47 @@
-/*
- * Con questo programma voglio illustrare i seguenti concetti:
- * 1. MAIN e' un thread come gli altri e quindi puo' terminare prima che gli altri
- * 2. THREADs vengono eseguiti allo stesso tempo
- * 3. THREADs possono essere interrotti e hanno la possibilita' di interrompersi in modo pulito
- * 4. THREADs possono essere definiti mediante una CLASSE che implementa un INTERFACCIA Runnable
- * 5. THREADs possono essere avviati in modo indipendente da quando sono stati definiti
- * 6. posso passare parametri al THREADs tramite il costruttore della classe Runnable
- */
 package multithread;
 
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
-/**
- *
- * @author Matteo Palitto
- */
+
 public class MultiThread {
 
-    /**
-     * @param args the command line arguments
-     */
+
     // "main" e' il THREAD principale da cui vengono creati e avviati tutti gli altri THREADs
     // i vari THREADs poi evolvono indipendentemente dal "main" che puo' eventualmente terminare prima degli altri
     public static void main(String[] args) {
         System.out.println("Main Thread iniziata...");
         long start = System.currentTimeMillis();
         
+        
         // Posso creare un THREAD e avviarlo immediatamente
-        Thread tic = new Thread (new TicTac("TIC"));
+        Thread tic = new Thread (new TicTacToe("TIC"));
         tic.start();
         
-        // Posso creare un 2ndo THREAD e farlo iniziare qualche tempo dopo...
-        Thread tac = new Thread(new TicTac("TAC"));
+       
+       // Posso creare un 2ndo THREAD e farlo iniziare qualche tempo dopo...
+        Thread tac = new Thread(new TicTacToe("TAC"));
+        tac.start();
+        
+        Thread toe = new Thread (new TicTacToe("TOE"));
+        toe.start();
+                
         
         try {
             TimeUnit.MILLISECONDS.sleep(1111);
-            tac.start();  // avvio del secondo THREAD
+            tic.join();
+            
         } catch (InterruptedException e) {}
         
         try {
             TimeUnit.MILLISECONDS.sleep(1234);
+            tac.join();
         } catch (InterruptedException e) {}
-        tac.interrupt(); // stop 2nd THREAD
 
+        try {
+            TimeUnit.MILLISECONDS.sleep(1432);
+            toe.join();
+            
+        } catch (InterruptedException e) {}
         
         long end = System.currentTimeMillis();
         System.out.println("Main Thread completata! tempo di esecuzione: " + (end - start) + "ms");
@@ -53,14 +53,14 @@ public class MultiThread {
 // +1 si puo estendere da un altra classe
 // +1 si possono passare parametri (usando il Costruttore)
 // +1 si puo' controllare quando un THREAD inizia indipendentemente da quando e' stato creato
-class TicTac implements Runnable {
+class TicTacToe implements Runnable {
     
     // non essesndo "static" c'e' una copia delle seguenti variabili per ogni THREAD 
-    private String t;
+    private final String t;
     private String msg;
 
     // Costruttore, possiamo usare il costruttore per passare dei parametri al THREAD
-    public TicTac (String s) {
+    public TicTacToe (String s) {
         this.t = s;
     }
     
@@ -73,7 +73,11 @@ class TicTac implements Runnable {
             //System.out.print(msg);
             
             try {
-                TimeUnit.MILLISECONDS.sleep(400);
+                 Random random = new Random();
+                 int j = 100;
+                 int n = 300-j;
+                 int k = random.nextInt(n)+j;
+                TimeUnit.MILLISECONDS.sleep(k);
             } catch (InterruptedException e) {
                 System.out.println("THREAD " + t + " e' stata interrotta! bye bye...");
                 return; //me ne vado = termino il THREAD
