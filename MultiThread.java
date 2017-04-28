@@ -2,10 +2,9 @@ package multithread;
 
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import static multithread.TicTacToe.punteggio;
 
 public class MultiThread {
-
-
     // "main" e' il THREAD principale da cui vengono creati e avviati tutti gli altri THREADs
     // i vari THREADs poi evolvono indipendentemente dal "main" che puo' eventualmente terminare prima degli altri
     public static void main(String[] args) {
@@ -27,23 +26,14 @@ public class MultiThread {
                 
         
         try {
-            TimeUnit.MILLISECONDS.sleep(1111);
+            
             tic.join();
-            
-        } catch (InterruptedException e) {}
-        
-        try {
-            TimeUnit.MILLISECONDS.sleep(1234);
             tac.join();
-        } catch (InterruptedException e) {}
-
-        try {
-            TimeUnit.MILLISECONDS.sleep(1432);
             toe.join();
-            
         } catch (InterruptedException e) {}
         
         long end = System.currentTimeMillis();
+        System.out.println("il punteggio e"+ punteggio);
         System.out.println("Main Thread completata! tempo di esecuzione: " + (end - start) + "ms");
     }
     
@@ -54,6 +44,8 @@ public class MultiThread {
 // +1 si possono passare parametri (usando il Costruttore)
 // +1 si puo' controllare quando un THREAD inizia indipendentemente da quando e' stato creato
 class TicTacToe implements Runnable {
+        public  static int punteggio = 0;
+        public  static boolean trovato=false;
     
     // non essesndo "static" c'e' una copia delle seguenti variabili per ogni THREAD 
     private final String t;
@@ -68,7 +60,12 @@ class TicTacToe implements Runnable {
     // se facessimo un overloading invece di un override il copilatore ci segnalerebbe l'errore
     // per approfondimenti http://lancill.blogspot.it/2012/11/annotations-override.html
     public void run() {
+
         for (int i = 10; i > 0; i--) {
+            if(t.equals("TAC"))
+            {
+                trovato = false;
+            }
             msg = "<" + t + "> ";
             //System.out.print(msg);
             
@@ -82,10 +79,19 @@ class TicTacToe implements Runnable {
                 System.out.println("THREAD " + t + " e' stata interrotta! bye bye...");
                 return; //me ne vado = termino il THREAD
             }
+            if ("TOE".equals(t) && trovato == true)
+            {
+
+                punteggio++;
+            }   
+            else
+            {
+                trovato= false;
+            }
             msg += t + ": " + i;
             System.out.println(msg);
+            
          
         }
     }
-    
 }
