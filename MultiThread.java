@@ -108,3 +108,4 @@ class TicTacToe implements Runnable {
         }
     }
 }
+//la parte finale del codice dove si deve vedere se toe e subito dopo tac l'ho fatta con Diac anche se non mi va l'output finale con il punteggio
