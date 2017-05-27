@@ -1,111 +1,86 @@
-/*
- * Con questo programma voglio illustrare i seguenti concetti:
- * 1. MAIN e' un thread come gli altri e quindi puo' terminare prima che gli altri
- * 2. THREADs vengono eseguiti allo stesso tempo
- * 3. THREADs possono essere interrotti e hanno la possibilita' di interrompersi in modo pulito
- * 4. THREADs possono essere definiti mediante una CLASSE che implementa un INTERFACCIA Runnable
- * 5. THREADs possono essere avviati in modo indipendente da quando sono stati definiti
- * 6. posso passare parametri al THREADs tramite il costruttore della classe Runnable
- */
 package multithread;
-
-import java.util.Random;
-/**
- *
- * @author Mario Ghergut
- */
 import java.util.concurrent.TimeUnit;
-import static multithread.TicTacToe.punteggio;
+import java.util.Random;
 
 public class MultiThread {
-    // "main" e' il THREAD principale da cui vengono creati e avviati tutti gli altri THREADs
-    // i vari THREADs poi evolvono indipendentemente dal "main" che puo' eventualmente terminare prima degli altri
     public static void main(String[] args) {
-        System.out.println("Main Thread iniziata...");
-        long start = System.currentTimeMillis();
         
+        System.out.println("Main Thread iniziata..."); // output  che ci avvia che il programma è avviato
         
-        // Posso creare un THREAD e avviarlo immediatamente
-        Thread tic = new Thread (new TicTacToe("TIC"));
-        tic.start();
+        long start = System.currentTimeMillis(); // ottiene il tempo di avvio
         
-       
-       // Posso creare un 2ndo THREAD e farlo iniziare qualche tempo dopo...
-        Thread tac = new Thread(new TicTacToe("TAC"));
-        tac.start();
+        Monitor moniT = new Monitor(); //monitor per controllare l'accesso alle risorse condivise
         
-        Thread toe = new Thread (new TicTacToe("TOE"));
-        toe.start();
-                
+        Thread tic = new Thread (new TicTacToe("TIC", moniT));   // creazione 1° treads
         
-        try {
+        Thread tac = new Thread(new TicTacToe("TAC", moniT)); // creazione 2° treads
+        
+        Thread toe = new Thread(new TicTacToe("TOE", moniT)); // creazione 3° treads
+        
+        toe.start(); // inizio 1 thread 
+        
+        tac.start(); // inizio 2 thread 
+        
+        tic.start(); // inizio 3 thread 
             
-            tic.join();
+        try{
+            tic.join(); // Attendo che l'esecuzione di ogni thread finisca. Per poi proseguire
             tac.join();
             toe.join();
-        } catch (InterruptedException e) {}
+        }catch (InterruptedException e) {}
         
-        long end = System.currentTimeMillis();
-        System.out.println("il punteggio e"+ punteggio);
-        System.out.println("Main Thread completata! tempo di esecuzione: " + (end - start) + "ms");
+        
+        long end = System.currentTimeMillis(); // ottengo il tempo al momento della conclusione del programma
+        System.out.println("Main Thread completata! tempo di esecuzione: " + (end - start) + "ms"); // esegue operazioni per sapere quanto ci ha messo ad eseguire tutto il codice
+        System.out.println("Punteggio: " + moniT.getPunteggio()); // Output del punteggio
     }
-    
 }
 
-// Ci sono vari (troppi) metodi per creare un THREAD in Java questo e' il mio preferito per i vantaggi che offre
-// +1 si puo estendere da un altra classe
-// +1 si possono passare parametri (usando il Costruttore)
-// +1 si puo' controllare quando un THREAD inizia indipendentemente da quando e' stato creato
 class TicTacToe implements Runnable {
-        public  static int punteggio = 0;
-        public  static boolean trovato=false;
-    
-    // non essesndo "static" c'e' una copia delle seguenti variabili per ogni THREAD 
-    private final String t;
-    private String msg;
-
+    private String t;
+    public String msg;
+    private Monitor m;
     // Costruttore, possiamo usare il costruttore per passare dei parametri al THREAD
-    public TicTacToe (String s) {
+    public TicTacToe (String s, Monitor m) {
+        this.m = m;
         this.t = s;
-    }
-    
+    }    
     @Override // Annotazione per il compilatore
     // se facessimo un overloading invece di un override il copilatore ci segnalerebbe l'errore
-    // per approfondimenti http://lancill.blogspot.it/2012/11/annotations-override.html
     public void run() {
-
         for (int i = 10; i > 0; i--) {
-            if(t.equals("TAC"))
-            {
-                trovato = false;
-            }
-            msg = "<" + t + "> ";
-            //System.out.print(msg);
-            
-            try {
-                 Random random = new Random();// generatore di numeri casuali che sara utile per sleep
-                 int j = 100;
-                 int n = 300-j;
-                 int k = random.nextInt(n)+j;
-                TimeUnit.MILLISECONDS.sleep(k);
-            } catch (InterruptedException e) {
-                System.out.println("THREAD " + t + " e' stata interrotta! bye bye...");
-                return; //me ne vado = termino il THREAD
-            }
-            if ("TOE".equals(t) && trovato == true)//confronto per vedere se TOE esce subito dopo TAC
-            {
-
-                punteggio++; 
-            }   
-            else
-            {
-                trovato= false;
-            }
-            msg += t + ": " + i;
-            System.out.println(msg);
-            
-         
+            msg = "<" + t + "> " + t + ": " + i;
+            m.Scrivi(t, msg);
         }
     }
 }
-//la parte finale del codice dove si deve vedere se toe e subito dopo tac l'ho fatta con Diac anche se non mi va l'output finale con il punteggio
+
+//classe monitor per la gestione di risorse condivise tra threads
+class Monitor{
+    private String ultimoThread = ""; //variabile contenente il thread eseguito precedentemente
+    private int punteggio; 
+    private final Random rand = new Random(); 
+    private int randoM;
+    
+    //Uso Synchronized in tal modo da avere un accesso ordinato da parte dei Thread
+    public synchronized void Scrivi(String t, String msg){
+            try {
+                randoM = rand.nextInt(300) + 100;
+                TimeUnit.MILLISECONDS.sleep(randoM);
+            } catch (InterruptedException e) {
+                System.out.println(e);
+                return; 
+            }
+            if(t.equals("TOE") && ultimoThread.equals("TAC")) //condizione 
+            {
+                punteggio ++;
+                msg += "\t" + "<--- Eccomi: " + punteggio; //aggiungo un segna punti, per verificare più velocemente il codice
+            }          
+            ultimoThread = t; // assegno all'ultimoThread il valore ottenuto dal Thread
+            System.out.println(msg);  // visualizzo messaggio in output
+    }   
+    public int getPunteggio() // restituisce il punteggio 
+    {
+        return punteggio;
+    }
+}
