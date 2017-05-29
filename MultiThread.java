@@ -1,7 +1,7 @@
 package multithread;
 import java.util.concurrent.TimeUnit;
 import java.util.Random;
-
+// main
 public class MultiThread {
     public static void main(String[] args) {
         
@@ -35,7 +35,7 @@ public class MultiThread {
         System.out.println("Punteggio: " + moniT.getPunteggio()); // Output del punteggio
     }
 }
-
+//classe che serve per creare i threads
 class TicTacToe implements Runnable {
     private String t;
     public String msg;
